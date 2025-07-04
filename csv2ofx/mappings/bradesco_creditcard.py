@@ -73,7 +73,7 @@ mapping = {
     "is_split": False,
     "bank": "Bradesco",
     "bank_id": "0237",
-    "currency": "R$",
+    "currency": "BRL",
     "delimiter": ";",
     "account": os.environ.get("BRADESCO_ACCOUNT", "1000002"),
     "date": get_date,
