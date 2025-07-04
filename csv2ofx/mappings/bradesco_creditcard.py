@@ -72,7 +72,7 @@ mapping = {
     "filter": bradesco_creditcard_filter,
     "is_split": False,
     "bank": "Bradesco",
-    "bank_id": "237",
+    "bank_id": "0237",
     "currency": "R$",
     "delimiter": ";",
     "account": os.environ.get("BRADESCO_ACCOUNT", "1000002"),
