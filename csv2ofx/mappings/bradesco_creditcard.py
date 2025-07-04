@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from operator import itemgetter
 
-DEF_DATE_FMT = "%m/%d/%Y"
+DEF_DATE_FMT = "%d/%m/%Y"
 
 
 def get_amount(row) -> float:
@@ -39,6 +39,33 @@ def bradesco_creditcard_filter(transaction) -> bool:
         return False
 
 
+_previous_date = None
+_dt_dict = {}
+
+
+def get_date(row) -> str:
+    global _previous_date
+    global _dt_dict
+    dt_str = row.get("Data")
+    if _dt_dict.get(dt_str) is not None:
+        return _dt_dict[dt_str]
+
+    dt = parse_bradesco_date(dt_str)
+    if _previous_date is not None and dt > _previous_date:
+        # this is a workaround for the fact that the CSV file dates only have the day and month
+        # however, since the transactions are ordered by date descending, we can assume that
+        # if the parsed date is greater than the previous date, it means that this is a transaction from the previous year
+        print(
+            f"Patching {row.get('Histórico')} date from {dt.strftime(DEF_DATE_FMT)} year from {dt.year} to {dt.year - 1}"
+        )
+        dt = dt.replace(year=dt.year - 1)
+
+    _previous_date = dt
+    res = dt.strftime(DEF_DATE_FMT)
+    _dt_dict[dt_str] = res
+    return res
+
+
 mapping = {
     "has_header": True,
     "first_row": 5,
@@ -49,7 +76,7 @@ mapping = {
     "currency": "R$",
     "delimiter": ";",
     "account": os.environ.get("BRADESCO_ACCOUNT", "1000002"),
-    "date": lambda r: parse_bradesco_date(r.get("Data")).strftime(DEF_DATE_FMT),
+    "date": get_date,
     "parse_fmt": DEF_DATE_FMT,
     "date_fmt": DEF_DATE_FMT,
     "amount": lambda r: str(get_amount(r)),
